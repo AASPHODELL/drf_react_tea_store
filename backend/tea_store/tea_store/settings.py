@@ -42,11 +42,13 @@ INSTALLED_APPS = [
     'rest_framework', 
     'rest_framework_simplejwt',
     'django_filters',
+    'drf_spectacular', # Документация для api
     # Наши приложения
     'api' 
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Схема для автоматической генерации API-документации
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT аутентификация
         'rest_framework.authentication.SessionAuthentication',         # Сессионная аутентификация для браузера
@@ -61,6 +63,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # Пагинация
     'PAGE_SIZE': 10,  # Размер страницы
+}
+
+SPECTACULAR_SETTINGS = { # Настройки для drf-spectacular
+    'TITLE': 'Cart Management API',                              
+    'DESCRIPTION': 'API для создания, удаления и обновления карточек товаров.',  
+    'VERSION': '1.0.0',                                     
+    'SERVE_INCLUDE_SCHEMA': False,                           
 }
 
 MIDDLEWARE = [
