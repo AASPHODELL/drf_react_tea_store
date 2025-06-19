@@ -50,7 +50,6 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Схема для автоматической генерации API-документации
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT аутентификация
         'rest_framework.authentication.SessionAuthentication',         # Сессионная аутентификация для браузера
     ),
     'DEFAULT_PERMISSION_CLASSES': (
