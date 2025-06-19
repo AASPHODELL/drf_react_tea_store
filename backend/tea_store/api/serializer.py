@@ -8,4 +8,5 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     class Meta: # Этот класс нужен для связи сериализатора с моделью Django, просто добавляем его для работы
         model = CartItem
-        fields = ('__all__')
+        fields = ('__all__') # Это автоматически включит author, поэтому это поле не нужно объявлять руками
+        read_only_fields = ('author',) # Это поле нельзя менять, оно должно быть только для чтения 

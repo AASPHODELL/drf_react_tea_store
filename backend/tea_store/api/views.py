@@ -13,3 +13,6 @@ class CartItemViewSet(viewsets.ModelViewSet): # !! Как оказалось, Ca
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer): # Метод, который вызывается при создании
+        serializer.save(author=self.request.user) # Записываем в поле author текущего аутентифицированного пользователя
