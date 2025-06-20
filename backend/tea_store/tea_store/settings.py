@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'drf_spectacular', # Документация для api
     # Наши приложения
     'api',
-    'users'
+    'users',
+    'corsheaders'
 ]
 
 REST_FRAMEWORK = {
@@ -73,6 +74,8 @@ SPECTACULAR_SETTINGS = { # Настройки для drf-spectacular
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -82,6 +85,48 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'api.middlewares.LoggingProductsMiddleware',
 ]
+
+# Для разработки - разрешить все origins (не использовать в production!)
+# CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Разрешить передачу cookies между доменами
+CORS_ALLOW_CREDENTIALS = True
+
+# Время кэширования CORS preflight запросов (в секундах)
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Защита от clickjacking
+X_FRAME_OPTIONS = 'DENY'
+
+# Content Security Policy
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
 
 ROOT_URLCONF = 'tea_store.urls'
 
