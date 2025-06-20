@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular', # Документация для api
     # Наши приложения
-    'api' 
+    'api',
+    'users'
 ]
 
 REST_FRAMEWORK = {
@@ -99,7 +100,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tea_store.wsgi.application'
-
+AUTH_USER_MODEL = 'users.User'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

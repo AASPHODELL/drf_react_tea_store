@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Импорт маршрутов из ursl.py приложения api
     path('api/', include('api.urls')),
+    path('api/users/', include('users.urls')),
     # Маршруты для автоматической документации
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
