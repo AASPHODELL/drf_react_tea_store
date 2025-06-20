@@ -9,6 +9,8 @@ from .serializers import RegisterSerializer, UserSerializer, LoginSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 
+from .wraps import drf_admin_required
+
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
@@ -52,3 +54,11 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+class UsersProfileView(APIView):
+    @drf_admin_required
+    def get(self, request):
+        users = User.objects.all()  # Получаем всех пользователей
+        serializer = UserSerializer(users, many=True)  # Сериализуем с many=True
+        return Response(serializer.data)  # Возвращаем данные
