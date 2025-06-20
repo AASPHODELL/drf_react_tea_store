@@ -83,7 +83,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'api.middlewares.LoggingProductsMiddleware',
+    'tea_store.middlewares.LoggingProductsMiddleware',
 ]
 
 # Для разработки - разрешить все origins (не использовать в production!)
