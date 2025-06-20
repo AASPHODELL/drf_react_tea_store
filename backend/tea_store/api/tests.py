@@ -81,13 +81,13 @@ class CartItemTests(APITestCase):
     def test_guest_cannot_create_cart_item(self):
         """Гость НЕ может создавать карточки товаров (CREATE)."""
         response = self.client.post(self.list_url, self.valid_payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(CartItem.objects.count(), 1) # Убедимся, что новый элемент не создан
 
     def test_guest_cannot_update_cart_item(self):
         """Гость НЕ может обновлять карточки товаров (UPDATE)."""
         response = self.client.put(self.detail_url, self.update_payload, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         # Убедимся, что данные не изменились
         self.cart_item.refresh_from_db()
         self.assertEqual(self.cart_item.product_price, 10.50)
@@ -95,7 +95,7 @@ class CartItemTests(APITestCase):
     def test_guest_cannot_delete_cart_item(self):
         """Гость НЕ может удалять карточки товаров (DELETE)."""
         response = self.client.delete(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(CartItem.objects.count(), 1) # Убедимся, что элемент не удален
 
     # --- Тесты для аутентифицированных пользователей (НЕ владельцев и НЕ админов) ---
