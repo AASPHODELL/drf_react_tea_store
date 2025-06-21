@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Сторонние приложения
     'rest_framework', 
-    'rest_framework_simplejwt',
+    #'rest_framework_simplejwt',
     'django_filters',
     'drf_spectacular', # Документация для api
     # Наши приложения
