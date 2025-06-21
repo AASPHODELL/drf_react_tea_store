@@ -87,7 +87,7 @@ MIDDLEWARE = [
 ]
 
 # Для разработки - разрешить все origins (не использовать в production!)
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True # Потом переделаю на прот 3000
 
 CORS_ALLOW_METHODS = [
     'DELETE',
