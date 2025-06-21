@@ -1,64 +1,73 @@
-import './App.css';
-import axios from 'axios';
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext'; // Импортируем провайдер и хук аутентификации
 
-class App extends React.Component {
-  state = {
-    details: [],
-    loading: true,
-    error: null,
+// Импортируем компоненты страниц-заглушек
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import CartPage from './pages/CartPage';
+import ProfilePage from './pages/ProfilePage';
+
+// Компонент, который решает: отображать маршрут, или перенаправлять пользователя на страницу входа 
+const PrivateRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth(); // Получаем статус аутентификации из контекста
+
+  // Сообщение - заглужка при проверке аутентификации
+  if (loading) {
+    return <div>Загрузка аутентификации...</div>; 
   }
 
-  componentDidMount() {
-    const API_URL = 'http://localhost:8000/api/cartitems/';
+  // Если пользователь аутентифицирован, показываем дочерние компоненты, иначе - перенаправляем на страницу входа
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
-    axios.get(API_URL)
-      .then(res => {
-        this.setState({
-          details: res.data.results,
-          loading: false,
-        });
-      })
-      .catch(err => {
-        console.error("Ошибка при получении данных:", err);
-        this.setState({
-          error: 'Не удалось загрузить товары корзины. Проверьте консоль для деталей.',
-          loading: false,
-        });
-      });
-  }
+// Компонент для навигации ---
+const NavBar = () => {
+  const { isAuthenticated, logout, user } = useAuth(); // Получаем статус, функцию выхода и данные пользователя
 
-  render() {
-    const { details, loading, error } = this.state;
+  return (
+    <nav style={{ padding: '10px', background: '#f0f0f0', display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+      <Link to="/" style={{ marginRight: '15px' }}>Главная</Link>
+      <Link to="/cart" style={{ marginRight: '15px' }}>Корзина</Link>
+      {isAuthenticated ? ( // Если пользователь авторизован
+        <>
+          {/* Ссылка на профиль с именем пользователя */}
+          <Link to="/profile" style={{ marginRight: '15px' }}>Привет, {user?.username}!</Link>
+          {/* Кнопка выхода */}
+          <button onClick={logout} style={{ marginRight: '15px', padding: '5px 10px', cursor: 'pointer' }}>Выйти</button>
+        </>
+      ) : ( // Если пользователь не авторизован
+        <>
+          <Link to="/login" style={{ marginRight: '15px' }}>Войти</Link>
+          <Link to="/register" style={{ marginRight: '15px' }}>Регистрация</Link>
+        </>
+      )}
+    </nav>
+  );
+};
 
-    if (loading) {
-      return <div>Загрузка товаров...</div>;
-    }
+// Основной компонент App
+function App() {
+  return (
+    <Router> {/* BrowserRouter оборачивает все маршруты */}
+      <AuthProvider> {/* AuthProvider предоставляет контекст аутентификации */}
+        <NavBar /> {/* Панель навигации */}
+        <div style={{ padding: '20px' }}>
+          <Routes> {/* Routes определяет, какой компонент будет отображен в зависимости от URL */}
+            <Route path="/" element={<HomePage />} /> {/* Главная страница */}
+            <Route path="/login" element={<LoginPage />} /> {/* Страница входа */}
+            <Route path="/register" element={<RegisterPage />} /> {/* Страница регистрации */}
+            
+            {/* Защищенные маршруты. PrivateRoute решит, показывать ли CartPage/ProfilePage */}
+            <Route path="/cart" element={<PrivateRoute><CartPage /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
 
-    if (error) {
-      return <div style={{ color: 'red' }}>{error}</div>;
-    }
-
-    return (
-      <div style={{ padding: '20px' }}>
-        <header><h1>Данные из Django: Товары в корзине</h1></header>
-        <hr />
-        {details.length === 0 ? (
-          <p>Корзина пуста.</p>
-        ) : (
-          <ul>
-            {details.map((output) => (
-              <li key={output.id} style={{ marginBottom: '10px', border: '1px solid #ccc', padding: '10px' }}>
-                <h2>Название: {output.product_name}</h2>
-                <p>Цена: {output.product_price} руб./шт</p>
-                <p>Количество: {output.product_quantity} шт.</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    );
-  }
+          </Routes>
+        </div>
+      </AuthProvider>
+    </Router>
+  );
 }
 
 export default App;
