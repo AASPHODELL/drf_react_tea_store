@@ -36,7 +36,6 @@ const HomePage = () => {
       }
 
       const url = `/cartitems/?${params.toString()}`; // Формируем URL с параметрами
-      
       const response = await axiosInstance.get(url);
       setProducts(response.data.results);
     } catch (err) {
@@ -50,8 +49,43 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchProducts(); // Запускается при монтировании
-  }, [fetchProducts]); // Пустой массив зависимостей означает, что эффект запустится один раз при монтировании
 
+    const ws = new WebSocket('ws://localhost:8000/ws/products/'); 
+
+    ws.onopen = () => {
+        console.log('WebSocket Connected');
+      };
+
+    ws.onmessage = (event) => {
+        const productData = JSON.parse(event.data); // При получении сообщения, разбираем JSON
+        console.log('Received product update:', productData);
+
+        setProducts(prevProducts => {
+          const existingProductIndex = prevProducts.findIndex(p => p.id === productData.id);
+          if (existingProductIndex > -1) {
+            // Если товар найден, обновляем его
+            const updatedProducts = [...prevProducts];
+            updatedProducts[existingProductIndex] = productData; // Заменяем старые данные на новые
+            return updatedProducts;
+          } else {
+            // Если товар не найден (например, был только что создан), добавляем его
+            return [productData, ...prevProducts]; // Добавляем новый товар в начало списка
+          }
+        });
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket Disconnected');
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket Error:', error);
+      };
+
+      return () => {
+        ws.close(); // Очистка: закрываем WebSocket-соединение при размонтировании компонента
+      };
+    }, [fetchProducts]);
 
   const handleDelete = async (productId) => {  // Функция для обработки удаления объявления
     if (window.confirm('Вы уверены, что хотите удалить это объявление?')) {
@@ -66,35 +100,7 @@ const HomePage = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleMinPriceChange = (e) => {
-    setMinPrice(e.target.value);
-  };
-
-  const handleMaxPriceChange = (e) => {
-    setMaxPrice(e.target.value);
-  };
-
-  const handleOrderingChange = (e) => {
-    setOrdering(e.target.value);
-  };
-
-  const handleApplyFilters = () => {
-    fetchProducts(); // Просто вызываем функцию загрузки, она сама сформирует URL
-  };
-
-  const handleResetFilters = () => {
-    setSearchTerm('');
-    setMinPrice('');
-    setMaxPrice('');
-    setOrdering('');
-  };
-
-
-  if (loading && products.length === 0) { // Только если нет продуктов и идет загрузка
+  if (loading && products.length === 0) {
     return <div style={{ textAlign: 'center', padding: '20px' }}>Загрузка объявлений...</div>;
   }
 
@@ -115,18 +121,17 @@ const HomePage = () => {
               id="search"
               placeholder="Введите название чая"
               value={searchTerm}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
             />
           </div>
-
           <div style={{ flex: '1 1 150px' }}>
             <label style={{ display: 'block', marginBottom: '5px' }}>Цена от:</label>
             <input
               type="number"
               placeholder="Мин. цена"
               value={minPrice}
-              onChange={handleMinPriceChange}
+              onChange={(e) => setMinPrice(e.target.value)}
               style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
               min="0"
             />
@@ -137,18 +142,17 @@ const HomePage = () => {
               type="number"
               placeholder="Макс. цена"
               value={maxPrice}
-              onChange={handleMaxPriceChange}
+              onChange={(e) => setMaxPrice(e.target.value)}
               style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
               min="0"
             />
           </div>
-
           <div style={{ flex: '1 1 150px' }}>
             <label htmlFor="sort" style={{ display: 'block', marginBottom: '5px' }}>Сортировать по:</label>
             <select
               id="sort"
               value={ordering}
-              onChange={handleOrderingChange}
+              onChange={(e) => setOrdering(e.target.value)}
               style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
             >
               <option value="">По умолчанию</option>
@@ -163,13 +167,18 @@ const HomePage = () => {
         </div>
         <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
           <button
-            onClick={handleApplyFilters}
+            onClick={fetchProducts} // Теперь можно просто вызывать fetchProducts
             style={{ padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
           >
             Применить
           </button>
           <button
-            onClick={handleResetFilters}
+            onClick={() => {
+              setSearchTerm('');
+              setMinPrice('');
+              setMaxPrice('');
+              setOrdering('');
+            }}
             style={{ padding: '10px 20px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
           >
             Сбросить
@@ -177,10 +186,9 @@ const HomePage = () => {
         </div>
       </div>
 
-
       <hr style={{ margin: '20px 0' }} />
 
-      {products.length === 0 && !loading ? ( // Если нет продуктов и загрузка уже завершена
+      {products.length === 0 && !loading ? (
         <p style={{ textAlign: 'center' }}>Объявлений по заданным критериям не найдено.</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
@@ -198,16 +206,16 @@ const HomePage = () => {
             }}>
               <h3 style={{ margin: '0 0 10px 0', color: '#333', fontSize: '1.2em' }}>{product.product_name}</h3>
               <p style={{ margin: '0 0 5px 0', color: '#555' }}>
-                <strong style={{ color: '#000' }}>Продавец:</strong> {product.user_username || 'Неизвестно'}
+                <strong style={{ color: '#000' }}>Продавец:</strong> {product.author || 'Неизвестно'}
               </p>
               <p style={{ margin: '0 0 5px 0', color: '#555' }}>
                 <strong style={{ color: '#000' }}>Цена:</strong> {product.product_price} ₽
               </p>
               <p style={{ margin: '0 0 10px 0', color: '#555' }}>
-                <strong style={{ color: '#000' }}>В наличии:</strong> {product.product_quantity} шт.
+                <strong style={{ color: '#000' }}>В наличии:</strong> <span id={`quantity-${product.id}`}>{product.product_quantity}</span> шт.
               </p>
 
-              {isAuthenticated && user && user.id === product.author && ( // Используем product.author
+              {isAuthenticated && user && user.id === product.author && (
                 <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
                   <button
                     onClick={() => navigate(`/products/edit/${product.id}`)}

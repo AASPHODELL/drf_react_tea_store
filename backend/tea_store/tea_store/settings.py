@@ -40,9 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Сторонние приложения
     'rest_framework', 
-    #'rest_framework_simplejwt',
     'django_filters',
     'drf_spectacular', # Документация для api
+    'channels', # Для веб сокетов
     # Наши приложения
     'api',
     'users',
@@ -64,6 +64,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # Пагинация
     'PAGE_SIZE': 10,  # Размер страницы
+}
+
+ASGI_APPLICATION = 'tea_store.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer', # InMemoryChannelLayer - это простой способ, для нас подойдёт. Ещё есть через брокер сообщений (Redis)
+    },
 }
 
 SPECTACULAR_SETTINGS = { # Настройки для drf-spectacular
