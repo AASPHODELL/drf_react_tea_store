@@ -1,5 +1,4 @@
-// src/pages/HomePage.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback  } from 'react';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -11,24 +10,47 @@ const HomePage = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const fetchProducts = async () => { // Функция для загрузки объявлений
+  const [searchTerm, setSearchTerm] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [ordering, setOrdering] = useState('');
+
+  const fetchProducts = useCallback(async () => { // Функция для загрузки объявлений
     try {
-      setLoading(true); 
-      const response = await axiosInstance.get('/cartitems/');
+      setLoading(true);
+      setError(null);
+
+      // Формируем параметры запроса
+      const params = new URLSearchParams();
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      if (minPrice) {
+        params.append('product_price__gte', minPrice);
+      }
+      if (maxPrice) {
+        params.append('product_price__lte', maxPrice);
+      }
+      if (ordering) {
+        params.append('ordering', ordering);
+      }
+
+      const url = `/cartitems/?${params.toString()}`; // Формируем URL с параметрами
+      
+      const response = await axiosInstance.get(url);
       setProducts(response.data.results);
-      setError(null); 
     } catch (err) {
       console.error("Ошибка при получении списка объявлений:", err);
       setError('Не удалось загрузить список объявлений. Пожалуйста, попробуйте позже.');
-      setProducts([]); 
+      setProducts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, minPrice, maxPrice, ordering]);
 
   useEffect(() => {
     fetchProducts(); // Запускается при монтировании
-  }, []); // Пустой массив зависимостей означает, что эффект запустится один раз при монтировании
+  }, [fetchProducts]); // Пустой массив зависимостей означает, что эффект запустится один раз при монтировании
 
 
   const handleDelete = async (productId) => {  // Функция для обработки удаления объявления
@@ -44,7 +66,35 @@ const HomePage = () => {
     }
   };
 
-  if (loading) {
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleMinPriceChange = (e) => {
+    setMinPrice(e.target.value);
+  };
+
+  const handleMaxPriceChange = (e) => {
+    setMaxPrice(e.target.value);
+  };
+
+  const handleOrderingChange = (e) => {
+    setOrdering(e.target.value);
+  };
+
+  const handleApplyFilters = () => {
+    fetchProducts(); // Просто вызываем функцию загрузки, она сама сформирует URL
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setMinPrice('');
+    setMaxPrice('');
+    setOrdering('');
+  };
+
+
+  if (loading && products.length === 0) { // Только если нет продуктов и идет загрузка
     return <div style={{ textAlign: 'center', padding: '20px' }}>Загрузка объявлений...</div>;
   }
 
@@ -55,9 +105,83 @@ const HomePage = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h2>Чайная Барахолка: Все Объявления</h2>
-      <hr />
-      {products.length === 0 ? (
-        <p style={{ textAlign: 'center' }}>Объявлений пока нет. Станьте первым, кто добавит чай на продажу!</p>
+
+      <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f0f0f0' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <label htmlFor="search" style={{ display: 'block', marginBottom: '5px' }}>Поиск по названию:</label>
+            <input
+              type="text"
+              id="search"
+              placeholder="Введите название чая"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+          </div>
+
+          <div style={{ flex: '1 1 150px' }}>
+            <label style={{ display: 'block', marginBottom: '5px' }}>Цена от:</label>
+            <input
+              type="number"
+              placeholder="Мин. цена"
+              value={minPrice}
+              onChange={handleMinPriceChange}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+              min="0"
+            />
+          </div>
+          <div style={{ flex: '1 1 150px' }}>
+            <label style={{ display: 'block', marginBottom: '5px' }}>Цена до:</label>
+            <input
+              type="number"
+              placeholder="Макс. цена"
+              value={maxPrice}
+              onChange={handleMaxPriceChange}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+              min="0"
+            />
+          </div>
+
+          <div style={{ flex: '1 1 150px' }}>
+            <label htmlFor="sort" style={{ display: 'block', marginBottom: '5px' }}>Сортировать по:</label>
+            <select
+              id="sort"
+              value={ordering}
+              onChange={handleOrderingChange}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+            >
+              <option value="">По умолчанию</option>
+              <option value="product_name">Названию (А-Я)</option>
+              <option value="-product_name">Названию (Я-А)</option>
+              <option value="product_price">Цене (возр.)</option>
+              <option value="-product_price">Цене (убыв.)</option>
+              <option value="product_quantity">Количеству (возр.)</option>
+              <option value="-product_quantity">Количеству (убыв.)</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ marginTop: '15px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+          <button
+            onClick={handleApplyFilters}
+            style={{ padding: '10px 20px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          >
+            Применить
+          </button>
+          <button
+            onClick={handleResetFilters}
+            style={{ padding: '10px 20px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          >
+            Сбросить
+          </button>
+        </div>
+      </div>
+
+
+      <hr style={{ margin: '20px 0' }} />
+
+      {products.length === 0 && !loading ? ( // Если нет продуктов и загрузка уже завершена
+        <p style={{ textAlign: 'center' }}>Объявлений по заданным критериям не найдено.</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
           {products.map((product) => (
@@ -74,7 +198,7 @@ const HomePage = () => {
             }}>
               <h3 style={{ margin: '0 0 10px 0', color: '#333', fontSize: '1.2em' }}>{product.product_name}</h3>
               <p style={{ margin: '0 0 5px 0', color: '#555' }}>
-                <strong style={{ color: '#000' }}>Продавец:</strong> {product.author || 'Неизвестно'}
+                <strong style={{ color: '#000' }}>Продавец:</strong> {product.user_username || 'Неизвестно'}
               </p>
               <p style={{ margin: '0 0 5px 0', color: '#555' }}>
                 <strong style={{ color: '#000' }}>Цена:</strong> {product.product_price} ₽
@@ -83,7 +207,7 @@ const HomePage = () => {
                 <strong style={{ color: '#000' }}>В наличии:</strong> {product.product_quantity} шт.
               </p>
 
-              {isAuthenticated && user && user.id === product.author && (
+              {isAuthenticated && user && user.id === product.author && ( // Используем product.author
                 <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
                   <button
                     onClick={() => navigate(`/products/edit/${product.id}`)}
