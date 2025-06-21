@@ -1,8 +1,6 @@
 from django.shortcuts import render
 
-from rest_framework import viewsets, permissions, filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
+from rest_framework import viewsets, permissions
 
 from .models import CartItem
 from .serializer import CartItemSerializer
