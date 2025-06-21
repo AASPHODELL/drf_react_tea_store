@@ -112,6 +112,9 @@ CORS_ALLOW_HEADERS = [
 
 # Разрешить передачу cookies между доменами
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 
 # Время кэширования CORS preflight запросов (в секундах)
 CORS_PREFLIGHT_MAX_AGE = 86400
@@ -124,6 +127,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False # Чтобы у куки csrf-tocken не стояло флага http-only (из-за которого js не видит эту куку)
 
 # Защита от clickjacking
 X_FRAME_OPTIONS = 'DENY'

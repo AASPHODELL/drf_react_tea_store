@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import ProductFormPage from './pages/ProductFormPage';
 
 // Компонент, который решает: отображать маршрут, или перенаправлять пользователя на страницу входа 
 const PrivateRoute = ({ children }) => {
@@ -55,11 +56,13 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-
+            
             {/* Защищенные маршруты */}
             <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-            <Route path="/products/new" element={<PrivateRoute><div>Форма добавления объявления (скоро будет)</div></PrivateRoute>} />
-            <Route path="/products/edit/:id" element={<PrivateRoute><div>Форма редактирования объявления (скоро будет)</div></PrivateRoute>} />
+            {/* Маршрут для создания нового объявления */}
+            <Route path="/products/new" element={<PrivateRoute><ProductFormPage /></PrivateRoute>} />
+            {/* Маршрут для редактирования существующего объявления, :id - это параметр URL */}
+            <Route path="/products/edit/:id" element={<PrivateRoute><ProductFormPage /></PrivateRoute>} />
           </Routes>
         </div>
       </AuthProvider>
