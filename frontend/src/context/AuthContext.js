@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => { // Компонент для д�
   const checkAuthStatus = useCallback(async () => { // Проверка статуса пользователя
     try {
       setLoading(true); // Начинаем загрузку
-      const response = await axiosInstance.get('/profile/');
+      const response = await axiosInstance.get('/users/profile/');
       setUser(response.data); // Если успешно, сохраняем данные пользователя
       setIsAuthenticated(true); // Устанавливаем флаг, что пользователь авторизован
     } catch (error) {
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => { // Компонент для д�
   // Функции для взаимодействия с API аутентификации
   const login = async (username, password) => {
     try {
-      await axiosInstance.post('/login/', { username, password });
+      await axiosInstance.post('/users/login/', { username, password });
       await checkAuthStatus(); // После успешного входа, обновим статус пользователя
       return { success: true }; // Возвращаем успех
     } catch (error) {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => { // Компонент для д�
 
   const logout = async () => {
     try {
-      await axiosInstance.get('/logout/');
+      await axiosInstance.get('/users/logout/');
       setUser(null); // Очищаем данные пользователя
       setIsAuthenticated(false); // Устанавливаем флаг, что пользователь не авторизован
       await getCsrfToken(); // После выхода, возможно, потребуется новый CSRF-токен для следующих запросов
@@ -65,9 +65,9 @@ export const AuthProvider = ({ children }) => { // Компонент для д�
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData) => { // Объект userData содержит все поля из формы регистрации
     try {
-      await axiosInstance.post('/users/register/', userData);
+      await axiosInstance.post('/users/register/', userData); // Отправляет их на эндпоинт для регистрации 
       return { success: true };
     } catch (error) {
       console.error("Registration failed:", error.response?.data || error);

@@ -116,6 +116,10 @@ CORS_ALLOW_CREDENTIALS = True
 # Время кэширования CORS preflight запросов (в секундах)
 CORS_PREFLIGHT_MAX_AGE = 86400
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+]
+
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
